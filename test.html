@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IndexedDB Sample</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #numberList {
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>IndexedDBでのデータ保存</h1>
+    <button id="saveButton">ランダムな整数を保存</button>
+    <button id="resetButton">リセット</button>
+    <div id="numberList"></div>
+
+    <script>
+        // IndexedDBの設定
+        const dbName = 'RandomNumbersDB';
+        const storeName = 'numbers';
+        let db;
+
+        // IndexedDBの初期化
+        function initDB() {
+            const request = indexedDB.open(dbName, 1);
+            request.onupgradeneeded = (event) => {
+                db = event.target.result;
+                db.createObjectStore(storeName, { keyPath: 'id' });
+            };
+            request.onsuccess = (event) => {
+                db = event.target.result;
+                displayNumbers(); // データを表示
+            };
+            request.onerror = (event) => {
+                console.error('IndexedDBの初期化に失敗しました', event);
+            };
+        }
+
+        // ランダムな整数を生成し、IndexedDBに保存
+        function saveRandomNumber() {
+            const randomNumber = Math.floor(Math.random() * 10000) + 1;
+            const transaction = db.transaction([storeName], 'readwrite');
+            const store = transaction.objectStore(storeName);
+            const request = store.put({ id: randomNumber, value: randomNumber });
+
+            request.onsuccess = () => {
+                displayNumbers(); // 保存後に表示を更新
+            };
+            request.onerror = (event) => {
+                console.error('データの保存に失敗しました', event);
+            };
+        }
+
+        // IndexedDBからデータを取得して表示
+        function displayNumbers() {
+            const transaction = db.transaction([storeName], 'readonly');
+            const store = transaction.objectStore(storeName);
+            const request = store.getAll();
+
+            request.onsuccess = (event) => {
+                const numbers = event.target.result;
+                const numberList = document.getElementById('numberList');
+                numberList.innerHTML = ''; // 一度クリア
+
+                numbers.forEach((item) => {
+                    const div = document.createElement('div');
+                    div.textContent = item.value;
+                    numberList.appendChild(div);
+                });
+            };
+            request.onerror = (event) => {
+                console.error('データの取得に失敗しました', event);
+            };
+        }
+
+        // IndexedDBのデータをリセット
+        function resetDatabase() {
+            const transaction = db.transaction([storeName], 'readwrite');
+            const store = transaction.objectStore(storeName);
+            const request = store.clear();
+
+            request.onsuccess = () => {
+                displayNumbers(); // リセット後に表示を更新
+            };
+            request.onerror = (event) => {
+                console.error('データの削除に失敗しました', event);
+            };
+        }
+
+        // ボタンのイベントリスナーを設定
+        document.getElementById('saveButton').addEventListener('click', saveRandomNumber);
+        document.getElementById('resetButton').addEventListener('click', resetDatabase);
+
+        // 初期化
+        initDB();
+    </script>
+</body>
+</html>
