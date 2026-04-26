@@ -85,10 +85,11 @@
 
     document.addEventListener('touchstart', e => {
         const t = e.touches[0]; startDrag(t.clientX, t.clientY);
-    }, { passive: true });
+    }, { passive: false });
     document.addEventListener('touchmove', e => {
+        e.preventDefault();
         const t = e.touches[0]; moveDrag(t.clientX, t.clientY);
-    }, { passive: true });
+    }, { passive: false });
     document.addEventListener('touchend', endDrag);
 
     window.addEventListener('resize', resize);
