@@ -8,6 +8,10 @@
 
     const canvas = document.getElementById('bg-canvas');
     const ctx = canvas.getContext('2d');
+    const knightImg = new Image();
+    knightImg.src = 'images/knight.png';
+
+    const ANIM_DURATION = 300;
 
     let gameState = {
         boardErrors: new Set(),
@@ -20,7 +24,8 @@
         rows: 0,
         flashes: [],
         isDragging: false,
-        lastCell: null
+        lastCell: null,
+        knightAnim: null
     };
 
     let rafId = null;
@@ -59,56 +64,30 @@
     }
 
     function drawKnight() {
-        const x = gameState.knightCol * CELL;
-        const y = gameState.knightRow * CELL;
-        const s = CELL * 0.4;
+        let row = gameState.knightRow;
+        let col = gameState.knightCol;
 
-        ctx.save();
-        ctx.translate(x + CELL / 2, y + CELL / 2);
+        // アニメーション中の場合は補間位置を計算
+        if (gameState.knightAnim) {
+            const now = Date.now();
+            const elapsed = now - gameState.knightAnim.startTime;
+            const progress = Math.min(elapsed / ANIM_DURATION, 1);
 
-        // Neck
-        ctx.fillStyle = KNIGHT_COLOR;
-        ctx.strokeStyle = KNIGHT_OUTLINE;
-        ctx.lineWidth = 2;
-        ctx.fillRect(-s * 0.3, -s * 0.5, s * 0.6, s);
-        ctx.strokeRect(-s * 0.3, -s * 0.5, s * 0.6, s);
+            row = gameState.knightAnim.fromRow + (gameState.knightAnim.toRow - gameState.knightAnim.fromRow) * progress;
+            col = gameState.knightAnim.fromCol + (gameState.knightAnim.toCol - gameState.knightAnim.fromCol) * progress;
 
-        // Head (horse shape)
-        ctx.beginPath();
-        ctx.moveTo(0, -s * 1.2);
-        ctx.lineTo(s * 0.4, -s * 0.7);
-        ctx.lineTo(s * 0.5, -s * 0.2);
-        ctx.lineTo(s * 0.3, s * 0.2);
-        ctx.lineTo(-s * 0.3, s * 0.2);
-        ctx.lineTo(-s * 0.5, -s * 0.2);
-        ctx.lineTo(-s * 0.4, -s * 0.7);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
+            if (progress >= 1) {
+                gameState.knightAnim = null;
+            }
+        }
 
-        // Ear
-        ctx.beginPath();
-        ctx.moveTo(-s * 0.2, -s * 1.2);
-        ctx.lineTo(0, -s * 1.5);
-        ctx.lineTo(s * 0.2, -s * 1.2);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
+        const x = col * CELL;
+        const y = row * CELL;
 
-        // Eye
-        ctx.fillStyle = KNIGHT_OUTLINE;
-        ctx.beginPath();
-        ctx.arc(s * 0.15, -s * 0.6, s * 0.1, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Mouth
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.arc(0, -s * 0.1, s * 0.3, 0, Math.PI);
-        ctx.stroke();
-
-        ctx.restore();
+        // knight.png が読み込まれていれば使用
+        if (knightImg.complete && knightImg.naturalWidth > 0) {
+            ctx.drawImage(knightImg, x, y, CELL, CELL);
+        }
     }
 
     function drawFlashes() {
@@ -163,11 +142,22 @@
         const candidates = moves.slice(0, 3);
         const chosen = candidates[Math.floor(Math.random() * candidates.length)];
 
+        // アニメーション開始
+        gameState.knightAnim = {
+            fromRow: gameState.knightRow,
+            fromCol: gameState.knightCol,
+            toRow: chosen.row,
+            toCol: chosen.col,
+            startTime: now
+        };
+
         gameState.knightRow = chosen.row;
         gameState.knightCol = chosen.col;
 
-        // マスを修復
+        // マスを修復＆ハイライト
         updateCell(chosen.row, chosen.col);
+        gameState.flashes.push({ col: chosen.col, row: chosen.row, t: now });
+
         gameState.lastMoveTime = now;
     }
 
