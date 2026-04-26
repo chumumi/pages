@@ -142,22 +142,61 @@
         return valid;
     }
 
+    function bfsDistances() {
+        const distances = new Map();
+        const queue = [{row: gameState.knightRow, col: gameState.knightCol, dist: 0}];
+        distances.set(gameState.knightRow + ',' + gameState.knightCol, 0);
+
+        while (queue.length > 0) {
+            const {row, col, dist} = queue.shift();
+            const moves = getKnightMoves(row, col);
+
+            for (const {row: nr, col: nc} of moves) {
+                const key = nr + ',' + nc;
+                if (!distances.has(key)) {
+                    distances.set(key, dist + 1);
+                    queue.push({row: nr, col: nc, dist: dist + 1});
+                }
+            }
+        }
+        return distances;
+    }
+
     function moveKnight() {
         const moves = getKnightMoves();
         if (moves.length === 0) return;
 
-        // ソート（最後に訪れてからの経過時間が長い順）
+        let chosen;
+
+        // 誤り色マスがある場合
+        if (gameState.boardErrors.size > 0) {
+            const distances = bfsDistances();
+            let bestMove = moves[0];
+            let bestDist = Infinity;
+
+            for (const move of moves) {
+                const key = move.row + ',' + move.col;
+                const dist = distances.get(key) || Infinity;
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    bestMove = move;
+                }
+            }
+            chosen = bestMove;
+        } else {
+            // 誤り色マスがない場合はランダムウォーク
+            const now = Date.now();
+            moves.sort((a, b) => {
+                const timeA = now - (gameState.visitedTime.get(a.row + ',' + a.col) || 0);
+                const timeB = now - (gameState.visitedTime.get(b.row + ',' + b.col) || 0);
+                return timeB - timeA;
+            });
+
+            const candidates = moves.slice(0, 3);
+            chosen = candidates[Math.floor(Math.random() * candidates.length)];
+        }
+
         const now = Date.now();
-        moves.sort((a, b) => {
-            const timeA = now - (gameState.visitedTime.get(a.row + ',' + a.col) || 0);
-            const timeB = now - (gameState.visitedTime.get(b.row + ',' + b.col) || 0);
-            return timeB - timeA;
-        });
-
-        // 上位3つから選択
-        const candidates = moves.slice(0, 3);
-        const chosen = candidates[Math.floor(Math.random() * candidates.length)];
-
         // アニメーション開始
         gameState.knightAnim = {
             fromRow: gameState.knightRow,
