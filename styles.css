@@ -97,9 +97,9 @@ body {
 
 /* Hero Section */
 .hero {
-    background: linear-gradient(135deg, var(--white) 0%, var(--gray-light) 100%);
     text-align: center;
 }
+
 
 .hero h1 {
     font-size: 3.5rem;
