@@ -11,8 +11,8 @@
     const knightImg = new Image();
     knightImg.src = 'images/knight.svg';
 
-    const ANIM_DURATION = 300;
-    const STAY_DURATION = 33;
+    const ANIM_DURATION = 150;
+    const STAY_DURATION = 16;
 
     let gameState = {
         boardErrors: new Set(),
@@ -169,7 +169,6 @@
 
         gameState.knightRow = chosen.row;
         gameState.knightCol = chosen.col;
-        gameState.knightStayTime = now + ANIM_DURATION;
 
         // マスを修復
         updateCell(chosen.row, chosen.col);
@@ -199,6 +198,8 @@
             } else {
                 gameState.boardErrors.delete(key);
             }
+            // 色が変わったらハイライト
+            gameState.flashes.push({ col, row, t: Date.now(), is3x3: false });
         }
 
         // 次の訪問時は反対の色
@@ -211,10 +212,10 @@
         const errorRatio = gameState.boardErrors.size / totalCells;
 
         if (errorRatio >= 0.5) {
-            return 200;
+            return 100;
         }
-        // 線形補間: 1000ms (errorRatio=0) → 200ms (errorRatio=0.5)
-        return 1000 - (800 * errorRatio / 0.5);
+        // 線形補間: 500ms (errorRatio=0) → 100ms (errorRatio=0.5)
+        return 500 - (400 * errorRatio / 0.5);
     }
 
 
@@ -266,13 +267,6 @@
 
     function gameLoop() {
         const now = Date.now();
-
-        // ナイト到着時（アニメーション完了時）に色を変更してハイライト表示
-        if (gameState.knightStayTime > 0 && now >= gameState.knightStayTime && now < gameState.knightStayTime + FLASH_MS) {
-            // ハイライト表示（色変更はこのタイミングで既に完了している）
-            gameState.flashes.push({ col: gameState.knightCol, row: gameState.knightRow, t: gameState.knightStayTime });
-            gameState.knightStayTime = -1;
-        }
 
         // ナイト移動判定
         if (now - gameState.lastMoveTime >= gameState.moveInterval) {
