@@ -9,7 +9,7 @@
     const canvas = document.getElementById('bg-canvas');
     const ctx = canvas.getContext('2d');
     const knightImg = new Image();
-    knightImg.src = 'images/sns/knight.svg';
+    knightImg.src = 'knight.png';
 
     const ANIM_DURATION = 150;
     const STAY_DURATION = 16;
