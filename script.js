@@ -34,15 +34,6 @@
         gameState.boardErrors.clear();
         gameState.visitedTime.clear();
 
-        // ランダムに約50%のマスを誤り状態に
-        for (let r = 0; r < gameState.rows; r++) {
-            for (let c = 0; c < gameState.cols; c++) {
-                if (Math.random() < 0.5) {
-                    gameState.boardErrors.add(r + ',' + c);
-                }
-            }
-        }
-
         // ナイトを中央に配置
         gameState.knightRow = Math.floor(gameState.rows / 2);
         gameState.knightCol = Math.floor(gameState.cols / 2);
@@ -190,6 +181,23 @@
         return gameState.boardErrors.size === 0;
     }
 
+    function flipCell(row, col) {
+        const key = row + ',' + col;
+        if (gameState.boardErrors.has(key)) {
+            gameState.boardErrors.delete(key);
+        } else {
+            gameState.boardErrors.add(key);
+        }
+    }
+
+    function handlePointer(x, y) {
+        const col = Math.floor(x / CELL);
+        const row = Math.floor(y / CELL);
+        if (row >= 0 && row < gameState.rows && col >= 0 && col < gameState.cols) {
+            flipCell(row, col);
+        }
+    }
+
     function gameLoop() {
         const now = Date.now();
 
@@ -223,6 +231,13 @@
             rafId = requestAnimationFrame(gameLoop);
         }
     }
+
+    document.addEventListener('mousedown', e => handlePointer(e.clientX, e.clientY));
+    document.addEventListener('touchstart', e => {
+        e.preventDefault();
+        const t = e.touches[0];
+        handlePointer(t.clientX, t.clientY);
+    }, { passive: false });
 
     window.addEventListener('resize', resize);
     resize();
