@@ -22,17 +22,18 @@ html {
 body {
     font-family: "Meiryo UI", sans-serif;
     color: var(--text-dark);
-    background-color: #1E1714;
+    background-color: #EDE8DC;
     background-image:
-        linear-gradient(45deg, #C8E6C9 25%, transparent 25%),
-        linear-gradient(-45deg, #C8E6C9 25%, transparent 25%),
-        linear-gradient(45deg, transparent 75%, #C8E6C9 75%),
-        linear-gradient(-45deg, transparent 75%, #C8E6C9 75%);
+        linear-gradient(45deg, #D4E8C2 25%, transparent 25%),
+        linear-gradient(-45deg, #D4E8C2 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #D4E8C2 75%),
+        linear-gradient(-45deg, transparent 75%, #D4E8C2 75%);
     background-size: 100px 100px;
     background-position: 0 0, 0 50px, 50px -50px, -50px 0;
     line-height: 1.6;
     position: relative;
     overflow-x: hidden;
+    padding-bottom: 60px;
 }
 
 /* Navigation Bar */
@@ -348,4 +349,40 @@ body {
     .container {
         padding: 0 1rem;
     }
+}
+
+/* SNS Fixed Bottom Bar */
+.sns-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 0.6rem 1.5rem;
+    background: rgba(30, 23, 20, 0.85);
+    backdrop-filter: blur(8px);
+    z-index: 900;
+}
+
+.sns-icon-link {
+    display: flex;
+    align-items: center;
+    opacity: 0.85;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.sns-icon-link:hover {
+    opacity: 1;
+    transform: translateY(-3px);
+}
+
+.sns-icon-link img {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    object-fit: cover;
+    background-color: rgba(255, 255, 255, 0.1);
 }
