@@ -148,69 +148,96 @@
         return valid;
     }
 
-    function bfsFromErrors() {
-        const distances = new Map();
-        const queue = [];
-        const knightMoves = [[2, 1], [2, -1], [-2, 1], [-2, -1], [1, 2], [1, -2], [-1, 2], [-1, -2]];
+    function knightDistance(x, y) {
+        x = Math.abs(x);
+        y = Math.abs(y);
+        if (x < y) [x, y] = [y, x];
 
-        // すべての誤り色マスを起点として開始
-        for (const errorKey of gameState.boardErrors) {
-            const [r, c] = errorKey.split(',').map(Number);
-            distances.set(errorKey, 0);
-            queue.push({row: r, col: c, dist: 0});
-        }
+        if (x === 0 && y === 0) return 0;
+        if (x === 1 && y === 0) return 3;
+        if (x === 2 && y === 2) return 4;
 
-        while (queue.length > 0) {
-            const {row, col, dist} = queue.shift();
+        let d = Math.max(Math.ceil(x / 2), Math.ceil((x + y) / 3));
+        if ((d - (x + y)) % 2 !== 0) d += 1;
+        return d;
+    }
 
-            for (const [dr, dc] of knightMoves) {
-                const nr = row + dr;
-                const nc = col + dc;
-                if (nr >= 0 && nr < gameState.rows && nc >= 0 && nc < gameState.cols) {
-                    const key = nr + ',' + nc;
-                    if (!distances.has(key)) {
-                        distances.set(key, dist + 1);
-                        queue.push({row: nr, col: nc, dist: dist + 1});
-                    }
+    function getNextKnightMove(targetRow, targetCol) {
+        const dx = targetRow - gameState.knightRow;
+        const dy = targetCol - gameState.knightCol;
+
+        const candidates = [
+            [2, 1], [2, -1], [-2, 1], [-2, -1],
+            [1, 2], [1, -2], [-1, 2], [-1, -2]
+        ];
+
+        let bestMove = null;
+        let bestDist = Infinity;
+
+        for (const [dr, dc] of candidates) {
+            const nr = gameState.knightRow + dr;
+            const nc = gameState.knightCol + dc;
+
+            if (nr >= 0 && nr < gameState.rows && nc >= 0 && nc < gameState.cols) {
+                if (nr === gameState.knightPrevRow && nc === gameState.knightPrevCol) continue;
+
+                const newDx = targetRow - nr;
+                const newDy = targetCol - nc;
+                const dist = knightDistance(newDx, newDy);
+
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    bestMove = {row: nr, col: nc};
                 }
             }
         }
-        return distances;
+
+        return bestMove;
     }
 
     function moveKnight() {
-        const moves = getKnightMoves();
-        if (moves.length === 0) return;
-
         let chosen;
 
         // 誤り色マスがある場合
         if (gameState.boardErrors.size > 0) {
-            const distances = bfsFromErrors();
-            let bestMove = moves[0];
-            let bestDist = Infinity;
+            // 最も近い誤り色マスを見つける
+            let nearestError = null;
+            let nearestDist = Infinity;
 
-            for (const move of moves) {
-                const key = move.row + ',' + move.col;
-                const dist = distances.get(key) || Infinity;
-                if (dist < bestDist) {
-                    bestDist = dist;
-                    bestMove = move;
+            for (const errorKey of gameState.boardErrors) {
+                const [r, c] = errorKey.split(',').map(Number);
+                const dist = knightDistance(r - gameState.knightRow, c - gameState.knightCol);
+                if (dist < nearestDist) {
+                    nearestDist = dist;
+                    nearestError = {row: r, col: c};
                 }
             }
-            chosen = bestMove;
+
+            if (nearestError) {
+                chosen = getNextKnightMove(nearestError.row, nearestError.col);
+                if (!chosen) {
+                    // 移動できない場合はランダムウォーク
+                    const moves = getKnightMoves();
+                    chosen = moves.length > 0 ? moves[Math.floor(Math.random() * moves.length)] : null;
+                }
+            }
         } else {
             // 誤り色マスがない場合はランダムウォーク
-            const now = Date.now();
-            moves.sort((a, b) => {
-                const timeA = now - (gameState.visitedTime.get(a.row + ',' + a.col) || 0);
-                const timeB = now - (gameState.visitedTime.get(b.row + ',' + b.col) || 0);
-                return timeB - timeA;
-            });
+            const moves = getKnightMoves();
+            if (moves.length > 0) {
+                const now = Date.now();
+                moves.sort((a, b) => {
+                    const timeA = now - (gameState.visitedTime.get(a.row + ',' + a.col) || 0);
+                    const timeB = now - (gameState.visitedTime.get(b.row + ',' + b.col) || 0);
+                    return timeB - timeA;
+                });
 
-            const candidates = moves.slice(0, 3);
-            chosen = candidates[Math.floor(Math.random() * candidates.length)];
+                const candidates = moves.slice(0, 3);
+                chosen = candidates[Math.floor(Math.random() * candidates.length)];
+            }
         }
+
+        if (!chosen) return;
 
         const now = Date.now();
         // アニメーション開始
