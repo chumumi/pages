@@ -12,7 +12,7 @@
     knightImg.src = 'images/knight.svg';
 
     const ANIM_DURATION = 300;
-    const STAY_DURATION = 100;
+    const STAY_DURATION = 33;
 
     let gameState = {
         boardErrors: new Set(),
@@ -27,7 +27,8 @@
         isDragging: false,
         lastCell: null,
         knightAnim: null,
-        knightStayTime: 0
+        knightStayTime: 0,
+        knightNextIsLight: true
     };
 
     let rafId = null;
@@ -47,8 +48,14 @@
         // ナイトを中央に配置
         gameState.knightRow = Math.floor(gameState.rows / 2);
         gameState.knightCol = Math.floor(gameState.cols / 2);
+
+        // 初期位置の色を基準に、最初に変える色を決定
+        // shouldBeLight=true の場所なら、最初は CB (緑) に変更
+        // shouldBeLight=false の場所なら、最初は CA (白) に変更
+        const initialShouldBeLight = (gameState.knightRow + gameState.knightCol) % 2 === 0;
+        gameState.knightNextIsLight = !initialShouldBeLight;
+
         gameState.lastMoveTime = Date.now();
-        gameState.isGameOver = false;
     }
 
     function drawBase() {
@@ -172,20 +179,30 @@
 
     function updateCell(row, col) {
         const key = row + ',' + col;
-        const shouldBeLight = (row + col) % 2 === 0;
         const isError = gameState.boardErrors.has(key);
 
-        // shouldBeLight=true の時、表示される色を確認
-        // CA (light) が表示される条件: (shouldBeLight && !isError) || (!shouldBeLight && isError)
-        // CB (dark) が表示される条件: (shouldBeLight && isError) || (!shouldBeLight && !isError)
+        // ナイトの次の色に合わせて修正
+        // knightNextIsLight = true → CA (light) を表示したい
+        // knightNextIsLight = false → CB (dark) を表示したい
+        const displayLight = gameState.knightNextIsLight;
 
-        // 正しい色（shouldBeLight）で表示されるように修正
-        if (shouldBeLight && isError) {
-            gameState.boardErrors.delete(key);
-        } else if (!shouldBeLight && !isError) {
-            gameState.boardErrors.add(key);
+        // displayLight の色を表示するには
+        // displayLight = shouldBeLight !== isError
+        // shouldBeLight = displayLight ? (displayLight === !isError) : ...
+        // isError を制御して displayLight を実現
+        const shouldBeLight = (row + col) % 2 === 0;
+        const targetIsError = shouldBeLight !== displayLight;
+
+        if (isError !== targetIsError) {
+            if (targetIsError) {
+                gameState.boardErrors.add(key);
+            } else {
+                gameState.boardErrors.delete(key);
+            }
         }
 
+        // 次の訪問時は反対の色
+        gameState.knightNextIsLight = !gameState.knightNextIsLight;
         gameState.visitedTime.set(key, Date.now());
     }
 
