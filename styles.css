@@ -24,6 +24,33 @@ body {
     color: var(--text-dark);
     background-color: var(--white);
     line-height: 1.6;
+    position: relative;
+    overflow-x: hidden;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 200%;
+    height: 200%;
+    background:
+        radial-gradient(circle at 20% 50%, rgba(50, 184, 64, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(50, 184, 64, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 40% 20%, rgba(50, 184, 64, 0.04) 0%, transparent 50%);
+    animation: bgShift 15s ease-in-out infinite;
+    pointer-events: none;
+    z-index: -1;
+}
+
+@keyframes bgShift {
+    0%, 100% {
+        transform: translate(0, 0);
+    }
+    50% {
+        transform: translate(-30px, -30px);
+    }
 }
 
 /* Navigation Bar */
