@@ -142,12 +142,17 @@
         return valid;
     }
 
-    function bfsDistances() {
+    function bfsFromErrors() {
         const distances = new Map();
-        const queue = [{row: gameState.knightRow, col: gameState.knightCol, dist: 0}];
-        distances.set(gameState.knightRow + ',' + gameState.knightCol, 0);
-
+        const queue = [];
         const knightMoves = [[2, 1], [2, -1], [-2, 1], [-2, -1], [1, 2], [1, -2], [-1, 2], [-1, -2]];
+
+        // すべての誤り色マスを起点として開始
+        for (const errorKey of gameState.boardErrors) {
+            const [r, c] = errorKey.split(',').map(Number);
+            distances.set(errorKey, 0);
+            queue.push({row: r, col: c, dist: 0});
+        }
 
         while (queue.length > 0) {
             const {row, col, dist} = queue.shift();
@@ -175,7 +180,7 @@
 
         // 誤り色マスがある場合
         if (gameState.boardErrors.size > 0) {
-            const distances = bfsDistances();
+            const distances = bfsFromErrors();
             let bestMove = moves[0];
             let bestDist = Infinity;
 
