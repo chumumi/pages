@@ -57,9 +57,9 @@
                 const key = r + ',' + c;
                 const isError = gameState.boardErrors.has(key);
                 const shouldBeLight = (r + c) % 2 === 0;
-                const isLight = shouldBeLight !== isError;
+                const displayLight = shouldBeLight === !isError;
 
-                ctx.fillStyle = isLight ? CA : CB;
+                ctx.fillStyle = displayLight ? CA : CB;
                 ctx.fillRect(c * CELL, r * CELL, CELL, CELL);
             }
         }
@@ -102,7 +102,19 @@
             }
             const alpha = (1 - age / FLASH_MS) * 0.5;
             ctx.fillStyle = 'rgba(50, 184, 64,' + alpha + ')';
-            ctx.fillRect(gameState.flashes[i].col * CELL, gameState.flashes[i].row * CELL, CELL, CELL);
+
+            if (gameState.flashes[i].is3x3) {
+                // プレイヤーの3x3ハイライト
+                for (let dr = -1; dr <= 1; dr++) {
+                    for (let dc = -1; dc <= 1; dc++) {
+                        ctx.fillRect((gameState.flashes[i].col + dc) * CELL,
+                                    (gameState.flashes[i].row + dr) * CELL, CELL, CELL);
+                    }
+                }
+            } else {
+                // ナイトの1マスハイライト
+                ctx.fillRect(gameState.flashes[i].col * CELL, gameState.flashes[i].row * CELL, CELL, CELL);
+            }
         }
     }
 
@@ -208,7 +220,7 @@
                 }
             }
         }
-        gameState.flashes.push({ col, row, t: Date.now() });
+        gameState.flashes.push({ col, row, t: Date.now(), is3x3: true });
     }
 
     function startDrag(x, y) {
@@ -238,8 +250,9 @@
     function gameLoop() {
         const now = Date.now();
 
-        // ナイト到着時（アニメーション完了時）にハイライト表示
+        // ナイト到着時（アニメーション完了時）に色を変更してハイライト表示
         if (gameState.knightStayTime > 0 && now >= gameState.knightStayTime && now < gameState.knightStayTime + FLASH_MS) {
+            // ハイライト表示（色変更はこのタイミングで既に完了している）
             gameState.flashes.push({ col: gameState.knightCol, row: gameState.knightRow, t: gameState.knightStayTime });
             gameState.knightStayTime = -1;
         }
