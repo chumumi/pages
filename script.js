@@ -30,7 +30,8 @@
         lastCell: null,
         knightAnim: null,
         knightStayTime: 0,
-        knightNextIsLight: true
+        knightNextIsLight: true,
+        waitAnimStart: 0
     };
 
     let rafId = null;
@@ -83,10 +84,12 @@
     function drawKnight() {
         let row = gameState.knightRow;
         let col = gameState.knightCol;
+        let offsetY = 0;
+
+        const now = Date.now();
 
         // アニメーション中の場合は補間位置を計算
         if (gameState.knightAnim) {
-            const now = Date.now();
             const elapsed = now - gameState.knightAnim.startTime;
             const progress = Math.min(elapsed / ANIM_DURATION, 1);
 
@@ -96,10 +99,16 @@
             if (progress >= 1) {
                 gameState.knightAnim = null;
             }
+        } else if (gameState.waitAnimStart > 0) {
+            // 待機アニメーション（ぴょんぴょん）
+            const elapsed = now - gameState.waitAnimStart;
+            const bounceTime = 400; // 1往復400ms
+            const bouncePhase = (elapsed % bounceTime) / bounceTime;
+            offsetY = Math.sin(bouncePhase * Math.PI) * CELL * 0.15;
         }
 
         const x = col * CELL;
-        const y = row * CELL;
+        const y = row * CELL + offsetY;
 
         // knight.png が読み込まれていれば使用
         if (knightImg.complete && knightImg.naturalWidth > 0) {
@@ -202,44 +211,38 @@
     }
 
     function moveKnight() {
+        // 誤り色マスがない場合は待機アニメーション
+        if (gameState.boardErrors.size === 0) {
+            gameState.waitAnimStart = Date.now();
+            gameState.lastMoveTime = Date.now() + 500;
+            return;
+        }
+
+        // 待機アニメーション停止
+        gameState.waitAnimStart = 0;
+
         let chosen;
 
         // 誤り色マスがある場合
-        if (gameState.boardErrors.size > 0) {
-            // 最も近い誤り色マスを見つける
-            let nearestError = null;
-            let nearestDist = Infinity;
+        // 最も近い誤り色マスを見つける
+        let nearestError = null;
+        let nearestDist = Infinity;
 
-            for (const errorKey of gameState.boardErrors) {
-                const [r, c] = errorKey.split(',').map(Number);
-                const dist = knightDistance(r - gameState.knightRow, c - gameState.knightCol);
-                if (dist < nearestDist) {
-                    nearestDist = dist;
-                    nearestError = {row: r, col: c};
-                }
+        for (const errorKey of gameState.boardErrors) {
+            const [r, c] = errorKey.split(',').map(Number);
+            const dist = knightDistance(r - gameState.knightRow, c - gameState.knightCol);
+            if (dist < nearestDist) {
+                nearestDist = dist;
+                nearestError = {row: r, col: c};
             }
+        }
 
-            if (nearestError) {
-                chosen = getNextKnightMove(nearestError.row, nearestError.col);
-                if (!chosen) {
-                    // 移動できない場合はランダムウォーク
-                    const moves = getKnightMoves();
-                    chosen = moves.length > 0 ? moves[Math.floor(Math.random() * moves.length)] : null;
-                }
-            }
-        } else {
-            // 誤り色マスがない場合はランダムウォーク
-            const moves = getKnightMoves();
-            if (moves.length > 0) {
-                const now = Date.now();
-                moves.sort((a, b) => {
-                    const timeA = now - (gameState.visitedTime.get(a.row + ',' + a.col) || 0);
-                    const timeB = now - (gameState.visitedTime.get(b.row + ',' + b.col) || 0);
-                    return timeB - timeA;
-                });
-
-                const candidates = moves.slice(0, 3);
-                chosen = candidates[Math.floor(Math.random() * candidates.length)];
+        if (nearestError) {
+            chosen = getNextKnightMove(nearestError.row, nearestError.col);
+            if (!chosen) {
+                // 移動できない場合はランダムウォーク
+                const moves = getKnightMoves();
+                chosen = moves.length > 0 ? moves[Math.floor(Math.random() * moves.length)] : null;
             }
         }
 
