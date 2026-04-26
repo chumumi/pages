@@ -147,15 +147,20 @@
         const queue = [{row: gameState.knightRow, col: gameState.knightCol, dist: 0}];
         distances.set(gameState.knightRow + ',' + gameState.knightCol, 0);
 
+        const knightMoves = [[2, 1], [2, -1], [-2, 1], [-2, -1], [1, 2], [1, -2], [-1, 2], [-1, -2]];
+
         while (queue.length > 0) {
             const {row, col, dist} = queue.shift();
-            const moves = getKnightMoves(row, col);
 
-            for (const {row: nr, col: nc} of moves) {
-                const key = nr + ',' + nc;
-                if (!distances.has(key)) {
-                    distances.set(key, dist + 1);
-                    queue.push({row: nr, col: nc, dist: dist + 1});
+            for (const [dr, dc] of knightMoves) {
+                const nr = row + dr;
+                const nc = col + dc;
+                if (nr >= 0 && nr < gameState.rows && nc >= 0 && nc < gameState.cols) {
+                    const key = nr + ',' + nc;
+                    if (!distances.has(key)) {
+                        distances.set(key, dist + 1);
+                        queue.push({row: nr, col: nc, dist: dist + 1});
+                    }
                 }
             }
         }
