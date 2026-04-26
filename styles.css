@@ -113,7 +113,7 @@ body {
 }
 
 .nav-links {
-    display: flex;
+    display: flex !important;
     list-style: none;
     gap: 2rem;
 }
@@ -274,14 +274,15 @@ body {
 
     .nav-title {
         flex: initial;
+        margin-right: auto;
     }
 
     .nav-links {
-        position: fixed;
+        position: fixed !important;
         top: 60px;
         right: 0;
         left: 0;
-        flex-direction: column;
+        flex-direction: column !important;
         background: rgba(255, 255, 255, 0.98);
         backdrop-filter: blur(10px);
         padding: 1.5rem;
@@ -290,8 +291,7 @@ body {
         overflow: hidden;
         transition: max-height 0.3s ease;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        margin-left: 0;
-        flex: none;
+        margin-left: 0 !important;
         justify-content: flex-start;
     }
 
