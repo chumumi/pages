@@ -4,6 +4,7 @@
     const CA = '#EDE8DC', CB = '#D4E8C2';
     const KNIGHT_COLOR = '#32B840';
     const KNIGHT_OUTLINE = '#1a1a1a';
+    const FLASH_MS = 250;
 
     const canvas = document.getElementById('bg-canvas');
     const ctx = canvas.getContext('2d');
@@ -15,9 +16,11 @@
         visitedTime: new Map(),
         lastMoveTime: 0,
         moveInterval: 1000,
-        isGameOver: false,
         cols: 0,
-        rows: 0
+        rows: 0,
+        flashes: [],
+        isDragging: false,
+        lastCell: null
     };
 
     let rafId = null;
@@ -108,6 +111,25 @@
         ctx.restore();
     }
 
+    function drawFlashes() {
+        const now = Date.now();
+        for (let i = gameState.flashes.length - 1; i >= 0; i--) {
+            const age = now - gameState.flashes[i].t;
+            if (age >= FLASH_MS) {
+                gameState.flashes.splice(i, 1);
+                continue;
+            }
+            const alpha = (1 - age / FLASH_MS) * 0.4;
+            ctx.fillStyle = 'rgba(50, 184, 64,' + alpha + ')';
+            for (let dr = -1; dr <= 1; dr++) {
+                for (let dc = -1; dc <= 1; dc++) {
+                    ctx.fillRect((gameState.flashes[i].col + dc) * CELL,
+                                (gameState.flashes[i].row + dr) * CELL, CELL, CELL);
+                }
+            }
+        }
+    }
+
     function getKnightMoves() {
         const moves = [
             [2, 1], [2, -1], [-2, 1], [-2, -1],
@@ -177,9 +199,6 @@
         return 1000 - (800 * errorRatio / 0.5);
     }
 
-    function checkGameOver() {
-        return gameState.boardErrors.size === 0;
-    }
 
     function flipCell(row, col) {
         const key = row + ',' + col;
@@ -190,12 +209,41 @@
         }
     }
 
-    function handlePointer(x, y) {
+    function flipRange(row, col) {
+        for (let dr = -1; dr <= 1; dr++) {
+            for (let dc = -1; dc <= 1; dc++) {
+                const r = row + dr;
+                const c = col + dc;
+                if (r >= 0 && r < gameState.rows && c >= 0 && c < gameState.cols) {
+                    flipCell(r, c);
+                }
+            }
+        }
+        gameState.flashes.push({ col, row, t: Date.now() });
+    }
+
+    function startDrag(x, y) {
+        gameState.isDragging = true;
         const col = Math.floor(x / CELL);
         const row = Math.floor(y / CELL);
-        if (row >= 0 && row < gameState.rows && col >= 0 && col < gameState.cols) {
-            flipCell(row, col);
+        gameState.lastCell = row + ',' + col;
+        flipRange(row, col);
+    }
+
+    function moveDrag(x, y) {
+        if (!gameState.isDragging) return;
+        const col = Math.floor(x / CELL);
+        const row = Math.floor(y / CELL);
+        const key = row + ',' + col;
+        if (key !== gameState.lastCell) {
+            gameState.lastCell = key;
+            flipRange(row, col);
         }
+    }
+
+    function endDrag() {
+        gameState.isDragging = false;
+        gameState.lastCell = null;
     }
 
     function gameLoop() {
@@ -204,10 +252,6 @@
         // ナイト移動判定
         if (now - gameState.lastMoveTime >= gameState.moveInterval) {
             moveKnight();
-
-            if (checkGameOver()) {
-                gameState.isGameOver = true;
-            }
         }
 
         // 速度更新
@@ -215,29 +259,27 @@
 
         // 描画
         drawBase();
+        drawFlashes();
         drawKnight();
 
-        // 勝利メッセージ
-        if (gameState.isGameOver) {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            ctx.fillStyle = '#32B840';
-            ctx.font = 'bold 48px "Meiryo UI", sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('ゲーム完了！', canvas.width / 2, canvas.height / 2);
-        } else {
-            rafId = requestAnimationFrame(gameLoop);
-        }
+        rafId = requestAnimationFrame(gameLoop);
     }
 
-    document.addEventListener('mousedown', e => handlePointer(e.clientX, e.clientY));
+    document.addEventListener('mousedown', e => startDrag(e.clientX, e.clientY));
+    document.addEventListener('mousemove', e => moveDrag(e.clientX, e.clientY));
+    document.addEventListener('mouseup', endDrag);
+
     document.addEventListener('touchstart', e => {
         e.preventDefault();
         const t = e.touches[0];
-        handlePointer(t.clientX, t.clientY);
+        startDrag(t.clientX, t.clientY);
     }, { passive: false });
+    document.addEventListener('touchmove', e => {
+        e.preventDefault();
+        const t = e.touches[0];
+        moveDrag(t.clientX, t.clientY);
+    }, { passive: false });
+    document.addEventListener('touchend', endDrag);
 
     window.addEventListener('resize', resize);
     resize();
