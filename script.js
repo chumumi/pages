@@ -37,11 +37,18 @@
     let rafId = null;
 
     function resize() {
+        const oldCols = gameState.cols;
+        const oldRows = gameState.rows;
+
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
         gameState.cols = Math.ceil(canvas.width / CELL);
         gameState.rows = Math.ceil(canvas.height / CELL);
-        initializeGame();
+
+        // 初回のみ初期化
+        if (oldCols === 0 && oldRows === 0) {
+            initializeGame();
+        }
     }
 
     function initializeGame() {
