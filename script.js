@@ -12,6 +12,7 @@
     knightImg.src = 'images/knight.svg';
 
     const ANIM_DURATION = 300;
+    const STAY_DURATION = 100;
 
     let gameState = {
         boardErrors: new Set(),
@@ -25,7 +26,8 @@
         flashes: [],
         isDragging: false,
         lastCell: null,
-        knightAnim: null
+        knightAnim: null,
+        knightStayTime: 0
     };
 
     let rafId = null;
@@ -98,14 +100,9 @@
                 gameState.flashes.splice(i, 1);
                 continue;
             }
-            const alpha = (1 - age / FLASH_MS) * 0.4;
+            const alpha = (1 - age / FLASH_MS) * 0.5;
             ctx.fillStyle = 'rgba(50, 184, 64,' + alpha + ')';
-            for (let dr = -1; dr <= 1; dr++) {
-                for (let dc = -1; dc <= 1; dc++) {
-                    ctx.fillRect((gameState.flashes[i].col + dc) * CELL,
-                                (gameState.flashes[i].row + dr) * CELL, CELL, CELL);
-                }
-            }
+            ctx.fillRect(gameState.flashes[i].col * CELL, gameState.flashes[i].row * CELL, CELL, CELL);
         }
     }
 
@@ -153,26 +150,28 @@
 
         gameState.knightRow = chosen.row;
         gameState.knightCol = chosen.col;
+        gameState.knightStayTime = now + ANIM_DURATION;
 
-        // マスを修復＆ハイライト
+        // マスを修復
         updateCell(chosen.row, chosen.col);
-        gameState.flashes.push({ col: chosen.col, row: chosen.row, t: now });
 
-        gameState.lastMoveTime = now;
+        gameState.lastMoveTime = now + ANIM_DURATION + STAY_DURATION;
     }
 
     function updateCell(row, col) {
         const key = row + ',' + col;
-        const correctColor = (row + col) % 2 === 0;
+        const shouldBeLight = (row + col) % 2 === 0;
         const isError = gameState.boardErrors.has(key);
 
-        // 誤った色なら修正
-        if (correctColor === isError) {
-            if (isError) {
-                gameState.boardErrors.delete(key);
-            } else {
-                gameState.boardErrors.add(key);
-            }
+        // shouldBeLight=true の時、表示される色を確認
+        // CA (light) が表示される条件: (shouldBeLight && !isError) || (!shouldBeLight && isError)
+        // CB (dark) が表示される条件: (shouldBeLight && isError) || (!shouldBeLight && !isError)
+
+        // 正しい色（shouldBeLight）で表示されるように修正
+        if (shouldBeLight && isError) {
+            gameState.boardErrors.delete(key);
+        } else if (!shouldBeLight && !isError) {
+            gameState.boardErrors.add(key);
         }
 
         gameState.visitedTime.set(key, Date.now());
@@ -238,6 +237,12 @@
 
     function gameLoop() {
         const now = Date.now();
+
+        // ナイト到着時（アニメーション完了時）にハイライト表示
+        if (gameState.knightStayTime > 0 && now >= gameState.knightStayTime && now < gameState.knightStayTime + FLASH_MS) {
+            gameState.flashes.push({ col: gameState.knightCol, row: gameState.knightRow, t: gameState.knightStayTime });
+            gameState.knightStayTime = -1;
+        }
 
         // ナイト移動判定
         if (now - gameState.lastMoveTime >= gameState.moveInterval) {
