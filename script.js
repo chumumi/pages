@@ -18,6 +18,8 @@
         boardErrors: new Set(),
         knightRow: 0,
         knightCol: 0,
+        knightPrevRow: -1,
+        knightPrevCol: -1,
         visitedTime: new Map(),
         lastMoveTime: 0,
         moveInterval: 1000,
@@ -135,6 +137,10 @@
         for (const [dr, dc] of moves) {
             const nr = gameState.knightRow + dr;
             const nc = gameState.knightCol + dc;
+            // 前のマスへの往復を避ける
+            if (nr === gameState.knightPrevRow && nc === gameState.knightPrevCol) {
+                continue;
+            }
             if (nr >= 0 && nr < gameState.rows && nc >= 0 && nc < gameState.cols) {
                 valid.push({row: nr, col: nc});
             }
@@ -216,6 +222,8 @@
             startTime: now
         };
 
+        gameState.knightPrevRow = gameState.knightRow;
+        gameState.knightPrevCol = gameState.knightCol;
         gameState.knightRow = chosen.row;
         gameState.knightCol = chosen.col;
 
