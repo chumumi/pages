@@ -11,8 +11,8 @@
     const knightImg = new Image();
     knightImg.src = 'knight.png';
 
-    const ANIM_DURATION = 150;
-    const STAY_DURATION = 16;
+    const ANIM_DURATION = 75;
+    const STAY_DURATION = 8;
 
     let gameState = {
         boardErrors: new Set(),
@@ -70,6 +70,12 @@
 
                 ctx.fillStyle = displayLight ? CA : CB;
                 ctx.fillRect(c * CELL, r * CELL, CELL, CELL);
+
+                // 誤り色マスをグレーのマスク表示
+                if (isError) {
+                    ctx.fillStyle = 'rgba(128, 128, 128, 0.4)';
+                    ctx.fillRect(c * CELL, r * CELL, CELL, CELL);
+                }
             }
         }
     }
@@ -296,10 +302,10 @@
         const errorRatio = gameState.boardErrors.size / totalCells;
 
         if (errorRatio >= 0.5) {
-            return 100;
+            return 50;
         }
-        // 線形補間: 500ms (errorRatio=0) → 100ms (errorRatio=0.5)
-        return 500 - (400 * errorRatio / 0.5);
+        // 線形補間: 250ms (errorRatio=0) → 50ms (errorRatio=0.5)
+        return 250 - (200 * errorRatio / 0.5);
     }
 
 
