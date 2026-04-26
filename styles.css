@@ -44,6 +44,7 @@ body {
     backdrop-filter: blur(10px);
     box-shadow: 0 4px 12px rgba(50, 184, 64, 0.15);
     z-index: 1000;
+    overflow-x: hidden;
 }
 
 .nav-container {
@@ -51,14 +52,64 @@ body {
     margin: 0 auto;
     padding: 1rem 2rem;
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    position: relative;
+}
+
+.nav-title {
+    flex: 1;
+}
+
+.hamburger-label {
+    margin-left: auto;
+}
+
+.nav-links {
+    flex: 1;
+    justify-content: flex-end;
+    margin-left: 2rem;
 }
 
 .nav-title {
     font-size: 1.5rem;
     font-weight: bold;
     color: var(--primary-green);
+}
+
+/* Hamburger Menu */
+.hamburger-toggle {
+    display: none !important;
+}
+
+.hamburger-label {
+    display: none !important;
+    flex-direction: column;
+    cursor: pointer;
+    gap: 6px;
+    margin-left: auto;
+    z-index: 1001;
+    order: 2;
+}
+
+.hamburger-label span {
+    width: 26px;
+    height: 3px;
+    background-color: var(--primary-green);
+    border-radius: 2px;
+    transition: all 0.3s ease;
+    display: block;
+}
+
+.hamburger-toggle:checked + .hamburger-label span:nth-child(1) {
+    transform: rotate(45deg) translate(8px, 8px);
+}
+
+.hamburger-toggle:checked + .hamburger-label span:nth-child(2) {
+    opacity: 0;
+}
+
+.hamburger-toggle:checked + .hamburger-label span:nth-child(3) {
+    transform: rotate(-45deg) translate(7px, -7px);
 }
 
 .nav-links {
@@ -208,12 +259,44 @@ body {
 @media (max-width: 768px) {
     .nav-container {
         padding: 1rem;
-        flex-direction: column;
-        gap: 1rem;
+        position: relative;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .hamburger-label {
+        display: flex !important;
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .nav-title {
+        flex: initial;
     }
 
     .nav-links {
+        position: fixed;
+        top: 60px;
+        right: 0;
+        left: 0;
+        flex-direction: column;
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(10px);
+        padding: 1.5rem;
         gap: 1rem;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        margin-left: 0;
+        flex: none;
+        justify-content: flex-start;
+    }
+
+    .hamburger-toggle:checked ~ .nav-links {
+        max-height: 400px;
     }
 
     .hero h1 {
@@ -233,6 +316,10 @@ body {
         width: 60px;
         height: 60px;
     }
+
+    .section {
+        border-radius: 12px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -241,11 +328,12 @@ body {
     }
 
     .nav-links {
-        gap: 0.5rem;
+        padding: 1.5rem 1rem;
+        gap: 1rem;
     }
 
     .nav-link {
-        font-size: 0.9rem;
+        font-size: 0.95rem;
     }
 
     .hero h1 {
@@ -258,5 +346,14 @@ body {
 
     .social-links {
         grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .social-section {
+        margin: 2rem 0;
+    }
+
+    .container {
+        padding: 0 1rem;
     }
 }
