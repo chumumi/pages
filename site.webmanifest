@@ -1,0 +1,16 @@
+{
+  "name": "chumu.net",
+  "short_name": "chumu",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d130f",
+  "theme_color": "#9be233",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "64x64",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

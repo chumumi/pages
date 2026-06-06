@@ -1,20 +1,24 @@
 # chumu.net
 
-Personal top page for `chumu.net`.
+Production top page for `chumu.net`.
 
-This is a GitHub Pages static site that works as a compact profile and gateway to Musashi, future services, and social accounts.
+This GitHub Pages site is the front door for chumu, Musashi, future services, and official account links.
 
-## Files
+## Structure
 
-- `index.html`: top page
-- `styles.css`: visual design
-- `script.js`: loads service and account links
-- `links.json`: editable service/account destinations
-- `LINKS_README.md`: examples for editing links
-- `CNAME`: custom domain setting for GitHub Pages
+- `index.html`: public top page
+- `styles.css`: responsive visual design
+- `script.js`: renders services and account links from `links.json`
+- `links.json`: editable service and account destinations
+- `images/fresh-hero.webp`: optimized hero image
+- `images/og-image.jpg`: social preview image
+- `favicon.svg`: browser icon
+- `site.webmanifest`: install/display metadata
+- `robots.txt` and `sitemap.xml`: search crawler metadata
+- `CNAME`: GitHub Pages custom domain
 
 ## Update Links
 
-Edit `links.json`.
+Edit `links.json` and use full URLs.
 
-Use full URLs such as `https://github.com/your-name`.
+When a URL is empty, the public page shows a polished `Coming soon` state.
