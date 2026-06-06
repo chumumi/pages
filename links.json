@@ -1,0 +1,18 @@
+{
+  "services": [
+    {
+      "id": "musashi",
+      "name": "Musashi",
+      "status": "Featured",
+      "description": "Main service connected from chumu.net. Add the public URL when it is ready.",
+      "url": "",
+      "linkLabel": "Open Musashi"
+    }
+  ],
+  "accounts": {
+    "github": "",
+    "twitter": "",
+    "youtube": "",
+    "discord": ""
+  }
+}
