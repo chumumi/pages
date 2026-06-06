@@ -4,8 +4,9 @@ const fallbackLinks = {
             id: "musashi",
             name: "Musashi",
             status: "Featured",
-            description: "chumu.net から最初につながるサービス。URL を追加するとこのカードから遷移できます。",
-            url: ""
+            description: "The first service connected from chumu.net. Its public destination can be added when ready.",
+            url: "",
+            linkLabel: "Open Musashi"
         }
     ],
     accounts: {
@@ -23,90 +24,81 @@ function isReadyUrl(url) {
     return typeof url === "string" && /^https?:\/\//.test(url);
 }
 
-function setLinkState(anchor, url, label) {
-    if (!anchor) return;
+function createElement(tagName, className, text) {
+    const element = document.createElement(tagName);
+    if (className) element.className = className;
+    if (text) element.textContent = text;
+    return element;
+}
 
-    if (isReadyUrl(url)) {
-        anchor.href = url;
-        anchor.textContent = label || "Open";
-        anchor.target = "_blank";
-        anchor.rel = "noopener noreferrer";
-        anchor.removeAttribute("aria-disabled");
-        return;
-    }
+function createOutboundLink(url, label) {
+    const link = createElement("a", "text-link", label || "Open");
+    link.href = url;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    return link;
+}
 
-    anchor.href = "#";
-    anchor.textContent = "準備中";
-    anchor.removeAttribute("target");
-    anchor.removeAttribute("rel");
-    anchor.setAttribute("aria-disabled", "true");
+function createDisabledText(text) {
+    return createElement("span", "text-link disabled", text);
 }
 
 function renderServices(services) {
     if (!serviceList || !Array.isArray(services)) return;
 
-    const serviceCards = services.map((service, index) => {
-        const card = document.createElement("article");
-        card.className = `service-card ${index === 0 ? "featured" : ""}`;
+    const cards = services.map((service, index) => {
+        const card = createElement("article", `service-card ${index === 0 ? "featured" : ""}`.trim());
+        const label = createElement("p", "label", service.status || "Service");
+        const title = createElement("h3", "", service.name || "Untitled service");
+        const description = createElement("p", "", service.description || "Details coming soon.");
+        const action = isReadyUrl(service.url)
+            ? createOutboundLink(service.url, service.linkLabel || "Open")
+            : createDisabledText("Coming soon");
 
-        const label = document.createElement("p");
-        label.className = "label";
-        label.textContent = service.status || "Service";
-
-        const title = document.createElement("h3");
-        title.textContent = service.name || "Untitled service";
-
-        const description = document.createElement("p");
-        description.textContent = service.description || "Service details coming soon.";
-
-        const link = document.createElement("a");
-        link.className = "text-link";
-        setLinkState(link, service.url, service.linkLabel || "Open");
-
-        card.append(label, title, description, link);
+        card.append(label, title, description, action);
         return card;
     });
 
-    const nextCard = document.createElement("article");
-    nextCard.className = "service-card muted";
-    nextCard.innerHTML = `
-        <p class="label">Next</p>
-        <h3>New service</h3>
-        <p>サービスを追加したら、links.json の services に1件足すだけでここに表示できます。</p>
-        <span class="text-link disabled">Slot ready</span>
-    `;
+    const futureCard = createElement("article", "service-card muted");
+    futureCard.append(
+        createElement("p", "label", "Next"),
+        createElement("h3", "", "Future service"),
+        createElement("p", "", "This area is ready for the next project once a name, description, and URL are available."),
+        createDisabledText("Reserved")
+    );
 
-    serviceList.replaceChildren(...serviceCards, nextCard);
+    serviceList.replaceChildren(...cards, futureCard);
 }
 
 function renderAccounts(accounts) {
     if (!accountList || !accounts) return;
 
-    const names = [
+    const accountNames = [
         ["github", "GitHub"],
         ["twitter", "Twitter"],
         ["youtube", "YouTube"],
         ["discord", "Discord"]
     ];
 
-    const accountCards = names.map(([key, name]) => {
+    const cards = accountNames.map(([key, name]) => {
         const url = accounts[key] || "";
-        const link = document.createElement("a");
-        link.className = "account-link";
-        link.href = isReadyUrl(url) ? url : "#";
+        const card = createElement(isReadyUrl(url) ? "a" : "span", "account-link", "");
+        const title = createElement("span", "", name);
+        const status = createElement("small", "", isReadyUrl(url) ? "Open" : "Coming soon");
 
         if (isReadyUrl(url)) {
-            link.target = "_blank";
-            link.rel = "noopener noreferrer";
+            card.href = url;
+            card.target = "_blank";
+            card.rel = "noopener noreferrer";
         } else {
-            link.setAttribute("aria-disabled", "true");
+            card.classList.add("disabled");
         }
 
-        link.innerHTML = `<span>${name}</span><small>${isReadyUrl(url) ? "Open" : "Link later"}</small>`;
-        return link;
+        card.append(title, status);
+        return card;
     });
 
-    accountList.replaceChildren(...accountCards);
+    accountList.replaceChildren(...cards);
 }
 
 function applyLinks(data) {

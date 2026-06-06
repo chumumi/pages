@@ -26,10 +26,16 @@ body {
         linear-gradient(135deg, #081008 0%, #101811 42%, #edf8dc 170%);
     font-family: "Inter", "Noto Sans JP", "Yu Gothic UI", Meiryo, sans-serif;
     line-height: 1.6;
+    text-rendering: optimizeLegibility;
 }
 
 a {
     color: inherit;
+}
+
+:focus-visible {
+    outline: 3px solid var(--sprout);
+    outline-offset: 4px;
 }
 
 .site-header {
@@ -111,7 +117,7 @@ a {
 .hero-media {
     position: absolute;
     inset: 0;
-    background-image: url("images/fresh-hero.png");
+    background-image: url("images/fresh-hero.webp");
     background-size: cover;
     background-position: center;
     transform: scale(1.02);
@@ -317,6 +323,15 @@ h2 {
     transform: translateY(-2px);
 }
 
+.account-link.disabled {
+    cursor: default;
+}
+
+.account-link.disabled:hover {
+    border-color: var(--line);
+    transform: none;
+}
+
 .account-link span {
     font-weight: 900;
 }
@@ -382,5 +397,13 @@ h2 {
         width: 100%;
         justify-content: center;
         text-align: center;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
     }
 }

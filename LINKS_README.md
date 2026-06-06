@@ -1,6 +1,8 @@
 # Link settings
 
-Edit `links.json` to add destinations without touching the page layout.
+Edit `links.json` to publish service and account links without changing the layout.
+
+Empty URLs are allowed. The public page will show `Coming soon`.
 
 ## Accounts
 
@@ -25,7 +27,7 @@ Add a new item to `services` when a new service is ready.
 {
   "id": "new-service",
   "name": "New Service",
-  "status": "Coming soon",
+  "status": "Live",
   "description": "Short description shown on the top page.",
   "url": "https://example.com",
   "linkLabel": "Open"
