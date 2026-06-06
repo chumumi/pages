@@ -1,15 +1,20 @@
-# Personal Website
+# chumu.net
 
-個人用ポートフォリオサイト（GitHub Pages）
+Personal top page for `chumu.net`.
 
-## About
-名刺代わりとなる個人ページ。基礎情報、プロジェクト、ブログへのリンクを掲載。
+This is a GitHub Pages static site that works as a compact profile and gateway to Musashi, future services, and social accounts.
 
-## Design
-- シンプルかつリッチなデザイン
-- テーマカラー：明るい緑
-- レスポンシブ対応（デスクトップ・モバイル）
+## Files
 
-## Development
-- 軽量で扱いやすい技術スタックを採用
-- GitHub Pagesでホスティング
+- `index.html`: top page
+- `styles.css`: visual design
+- `script.js`: loads service and account links
+- `links.json`: editable service/account destinations
+- `LINKS_README.md`: examples for editing links
+- `CNAME`: custom domain setting for GitHub Pages
+
+## Update Links
+
+Edit `links.json`.
+
+Use full URLs such as `https://github.com/your-name`.
