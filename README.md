@@ -10,7 +10,7 @@ This GitHub Pages site is the front door for chumu, yobi, future services, and o
 - `styles.css`: responsive visual design
 - `script.js`: renders services and account links from `links.json`
 - `links.json`: editable service and account destinations
-- `images/fresh-hero.webp`: optimized hero image
+- `images/homepage.png`: homepage hero image
 - `images/og-image.jpg`: social preview image
 - `favicon.svg`: browser icon
 - `site.webmanifest`: install/display metadata

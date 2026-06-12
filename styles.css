@@ -117,7 +117,7 @@ a {
 .hero-media {
     position: absolute;
     inset: 0;
-    background-image: url("images/fresh-hero.webp");
+    background-image: url("images/homepage.png");
     background-size: cover;
     background-position: center;
     transform: scale(1.02);
