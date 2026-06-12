@@ -1,12 +1,12 @@
 const fallbackLinks = {
     services: [
         {
-            id: "musashi",
-            name: "Musashi",
+            id: "yobi",
+            name: "yobi",
             status: "Featured",
-            description: "The first service connected from chumu.net. Its public destination can be added when ready.",
-            url: "",
-            linkLabel: "Open Musashi"
+            description: "A yobi.chumu.net service for viewing past questions from the Japanese preliminary bar examination.",
+            url: "https://yobi.chumu.net/",
+            linkLabel: "Open yobi"
         }
     ],
     accounts: {

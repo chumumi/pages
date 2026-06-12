@@ -2,7 +2,7 @@
 
 Production top page for `chumu.net`.
 
-This GitHub Pages site is the front door for chumu, Musashi, future services, and official account links.
+This GitHub Pages site is the front door for chumu, yobi, future services, and official account links.
 
 ## Structure
 
